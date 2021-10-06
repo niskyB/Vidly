@@ -1,7 +1,7 @@
 const Joi = require('joi');
 
 class Customer {
-    idLength = 20;
+    static idLength = 20;
 
     constructor(customerId, fullName, phone, isGold) {
         this.customerId = customerId;
