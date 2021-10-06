@@ -3,6 +3,7 @@ const router = express.Router();
 const sql = require('mssql');
 const { validate, Customer } = require('../models/customer');
 const { dbConfig } = require('../utils/db');
+const { v4: uuidv4 } = require('uuid');
 
 router.get('/', async(req, res) => {
     await sql.connect(dbConfig);
@@ -24,7 +25,6 @@ router.post('/', async(req, res) => {
     const error = validate(req.body);
     if (error) return res.status(400).send(error.details[0].message);
     // creat uuid
-    const { v4: uuidv4 } = require('uuid');
     const customerId = uuidv4().substr(1, Customer.idLength);
     // insert to db
     await sql.query `INSERT INTO tbl_Customer(customerId, fullName, phone, isGold) VALUES(${customerId}, ${req.body.fullName}, ${req.body.phone}, ${req.body.isGold})`;
