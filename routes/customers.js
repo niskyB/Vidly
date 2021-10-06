@@ -7,12 +7,14 @@ const { dbConfig } = require('../utils/db');
 router.get('/', async(req, res) => {
     await sql.connect(dbConfig);
     const customers = await sql.query `SELECT * FROM tbl_Customer`;
+    if (customers.recordset[0] == undefined) return res.status(404).send('The customer list is empty.');
     res.send(customers.recordset);
 });
 
 router.get('/:id', async(req, res) => {
     await sql.connect(dbConfig);
-    const customer = await sql.query `SELECT * FROM tbl_Customer WHERE customerId=${req.params.id}`
+    const customer = await sql.query `SELECT * FROM tbl_Customer WHERE customerId = ${req.params.id}`
+    if (customer.recordset[0] == undefined) return res.status(404).send('The customer with the given ID was not found.');
     res.send(customer.recordset[0]);
 });
 
@@ -35,12 +37,17 @@ router.put('/:id', async(req, res) => {
     const error = validate(req.body);
     if (error) return res.status(400).send(error.details[0].message);
     // update to db
-    await sql.query `UPDATE tbl_Customer SET fullName = ${req.body.fullName}, phone = ${req.body.phone}, isGold = ${req.body.isGold} WHERE customerId = ${req.params.id}`;
+    const result = await sql.query `UPDATE tbl_Customer SET fullName = ${req.body.fullName}, phone = ${req.body.phone}, isGold = ${req.body.isGold} WHERE customerId = ${req.params.id}`;
+    if (result.rowsAffected[0] === 0) return res.status(404).send('The customer with the given ID was not found.');
     res.send('Update customer successful');
 });
 
 router.delete('/:id', async(req, res) => {
-
+    await sql.connect(dbConfig);
+    // delete in db
+    const result = await sql.query `DELETE tbl_Customer WHERE customerId = ${req.params.id}`;
+    if (result.rowsAffected[0] === 0) return res.status(404).send('The customer with the given ID was not found.');
+    res.send('Delete customer successful');
 });
 
 module.exports = router;
