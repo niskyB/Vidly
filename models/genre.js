@@ -3,7 +3,8 @@ const Joi = require('joi');
 class Genre {
     static idLength = 20;
 
-    constructor(genreName) {
+    constructor(genreId, genreName) {
+        this.genreId = genreId;
         this.genreName = genreName;
     }
 }
