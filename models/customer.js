@@ -2,7 +2,7 @@ const Joi = require('joi');
 
 class Customer {
     static idLength = 20;
-    static dbName = vidly_customer;
+    static dbName = "vidly_customer";
 
     constructor(customerId, customerName, phone, isGold) {
         this.customerId = customerId;
