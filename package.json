@@ -19,6 +19,7 @@
   "homepage": "https://github.com/niskyB/Vidly#readme",
   "dependencies": {
     "express": "^4.17.1",
+    "joi": "^17.4.2",
     "mysql": "^2.18.1",
     "nodemon": "^2.0.13"
   }
