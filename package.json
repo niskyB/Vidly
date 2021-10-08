@@ -1,21 +1,20 @@
 {
-    "name": "Vidly",
-    "version": "1.0.0",
-    "description": "",
-    "main": "index.js",
-    "dependencies": {
-        "config": "^3.3.6",
-        "express": "^4.17.1",
-        "express-async-errors": "^3.1.1",
-        "joi": "^17.4.2",
-        "lodash": "^4.17.21",
-        "winston": "^3.3.3"
-    },
-    "devDependencies": {},
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "keywords": [],
-    "author": "",
-    "license": "ISC"
+  "name": "Vidly",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/niskyB/Vidly.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/niskyB/Vidly/issues"
+  },
+  "homepage": "https://github.com/niskyB/Vidly#readme"
 }
