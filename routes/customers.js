@@ -12,7 +12,7 @@ router.get('/', async(req, res) => {
                 if (results[0] === undefined) res.status(404).send('The customer list is empty.');
                 else res.send(results[0]);
             }
-        })
+        });
 });
 
 router.get('/:id', async(req, res) => {
