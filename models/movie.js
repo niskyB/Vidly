@@ -12,7 +12,7 @@ class Movie {
         this.genreId = genreId;
     }
 
-    static validateGenre(genre) {
+    static validateMovie(genre) {
         const schema = Joi.object({
             title: Joi.string().min(3).max(50).trim().required(),
             numberInStock: Joi.number().min(0).required(),
