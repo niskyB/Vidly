@@ -10,7 +10,7 @@ router.get('/', async(req, res) => {
             if (error) res.status(500).send('Something went wrong.');
             else {
                 if (results[0] === undefined) res.status(404).send('The customer list is empty.');
-                else res.send(results[0]);
+                else res.send(results);
             }
         });
 });
