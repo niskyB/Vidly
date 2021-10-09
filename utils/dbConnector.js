@@ -7,4 +7,17 @@ const pool = mysql.createPool({
     database: 'vidly'
 });
 
-exports.pool = pool;
+function connect(req, res, query, param, callback) {
+    pool.getConnection(function(err, connection) {
+        if (err) res.status(500).send('Something went wrong.');
+        // Use the connection
+        else {
+            connection.query(query, param, callback);
+        }
+        connection.release();
+    });
+}
+
+
+
+exports.connect = connect;
