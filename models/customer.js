@@ -11,7 +11,7 @@ class Customer {
         this.isGold = isGold;
     }
 
-    validateCustomer(customer) {
+    static validateCustomer(customer) {
         const schema = Joi.object({
             customerName: Joi.string().min(3).max(50).trim().required(),
             phone: Joi.string().min(5).max(20).pattern(/^[0-9]+$/).required(),
