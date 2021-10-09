@@ -9,7 +9,7 @@ router.get('/', async(req, res) => {
         function(error, results, fields) {
             if (error) res.status(500).send('Something went wrong.');
             else {
-                if (results[0] === undefined) res.status(400).send('The customer list is empty.');
+                if (results[0] === undefined) res.status(404).send('The customer list is empty.');
                 else res.send(results[0]);
             }
         })
@@ -20,7 +20,7 @@ router.get('/:id', async(req, res) => {
         function(error, results, fields) {
             if (error) res.status(500).send('Something went wrong.');
             else {
-                if (results[0] === undefined) res.status(400).send('The customer with the given ID was not found.');
+                if (results[0] === undefined) res.status(404).send('The customer with the given ID was not found.');
                 else res.send(results[0]);
             }
         });
@@ -42,11 +42,28 @@ router.post('/', async(req, res) => {
 });
 
 router.put('/:id', async(req, res) => {
+    const error = Customer.validateCustomer(req.body);
+    if (error) return res.status(400).send(error.details[0].message);
 
+    connect(req, res, "UPDATE ?? SET customerName = ?, phone = ?, isGold = ? WHERE customerId = ?", [Customer.dbName, req.body.customerName, req.body.phone, req.body.isGold, req.params.id],
+        function(error, results, fields) {
+            if (error) res.status(500).send('Something went wrong.');
+            else {
+                if (results.affectedRows === 0) res.status(404).send('The customer with the given ID was not found.');
+                else res.send('Update customer successful.');
+            }
+        });
 });
 
 router.delete('/:id', async(req, res) => {
-
+    connect(req, res, "DELETE FROM ?? WHERE customerId = ?", [Customer.dbName, req.params.id],
+        function(error, results, fields) {
+            if (error) res.status(500).send('Something went wrong.');
+            else {
+                if (results.affectedRows === 0) res.status(404).send('The customer with the given ID was not found.');
+                else res.send('Delete customer successful.');
+            }
+        });
 });
 
 module.exports = router;
