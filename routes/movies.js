@@ -33,7 +33,7 @@ router.post('/', async(req, res) => {
     const movieId = uuidv4().substr(1, Movie.idLength);
     connect(req, res, "INSERT INTO ??(movieId, title, numberInStock, dailyRentalRate, genreId) VALUES(?, ?, ?, ?, ?)", [Movie.dbName, movieId, req.body.title, req.body.numberInStock, req.body.dailyRentalRate, req.body.genreId],
         function(error, results, fields) {
-            if (error) res.status(500).send('Something went wrong.');
+            if (error) res.status(404).send('Invalid genre.');
             else {
                 if (results.affectedRows === 0) res.status(500).send('Something was wrong.');
                 else res.send('Add movie successful.');
@@ -47,7 +47,7 @@ router.put('/:id', async(req, res) => {
 
     connect(req, res, "UPDATE ?? SET title = ?, numberInStock = ?, dailyRentalRate = ?, genreId = ? WHERE movieId = ?", [Movie.dbName, req.body.title, req.body.numberInStock, req.body.dailyRentalRate, req.body.genreId, req.params.id],
         function(error, results, fields) {
-            if (error) res.status(500).send('Something went wrong.');
+            if (error) res.status(404).send('Invalid genre.');
             else {
                 if (results.affectedRows === 0) res.status(404).send('The movie with the given ID was not found.');
                 else res.send('Update movie successful.');
