@@ -1,4 +1,6 @@
 const Joi = require('joi');
+const jwt = require('jsonwebtoken');
+const config = require('config');
 
 class User {
     static idLength = 20;
@@ -22,6 +24,11 @@ class User {
 
         const { error } = schema.validate(user);
         return error;
+    }
+
+    generateAuthToken = function() {
+        const token = jwt.sign({ id: this.userId, isAdmin: this.isAdmin }, config.get('jwtPrivateKey'));
+        return token;
     }
 }
 
