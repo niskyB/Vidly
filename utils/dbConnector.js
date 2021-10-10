@@ -1,4 +1,4 @@
-const mysql = require('mysql');
+const mysql = require('mysql2');
 const pool = mysql.createPool({
     connectionLimit: 10,
     host: 'localhost',
@@ -6,6 +6,7 @@ const pool = mysql.createPool({
     password: '0410',
     database: 'vidly'
 });
+const promisePool = pool.promise();
 
 function connect(req, res, query, param, callback) {
     pool.getConnection(function(err, connection) {
@@ -18,6 +19,6 @@ function connect(req, res, query, param, callback) {
     });
 }
 
-
-
+exports.pool = pool;
+exports.promisePool = promisePool;
 exports.connect = connect;
