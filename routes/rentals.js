@@ -33,79 +33,52 @@ router.post('/', async(req, res) => {
     if (error) return res.status(400).send(error.details[0].message);
 
     pool.getConnection(async function(err, connection) {
-        if (err) res.status(500).send('Something went wrong.');
-        // Use the connection
-        else {
+        try {
+            if (err) throw new Error('Cannot connect to database.');
+            // Check existed customer
             let results = await promisePool.query(`SELECT * FROM ?? WHERE ?? = ?`, [Customer.dbName, "customerId", req.body.customerId]);
-            if (results[0].length === 0) res.status(404).send('Invalid customer.');
-            else {
-                results = await promisePool.query('SELECT * FROM ?? WHERE ?? = ?', [Movie.dbName, "movieId", req.body.movieId]);
-                if (results[0].length === 0) res.status(404).send('Invalid movie.');
-                else if (results[0][0].numberInStock === 0) res.status(400).send('Movie is not in stock.');
-                else {
-                    connection.beginTransaction(function(err) {
-                        if (err) res.status(500).send('Something went wrong.');
-                        else {
-                            connection.query('UPDATE ?? SET numberInStock = ? WHERE movieId = ?', [Movie.dbName, results[0][0].numberInStock - 1, req.body.movieId],
-                                function(error, results, fields) {
-                                    if (error) {
+            if (results[0].length === 0) throw new Error('Invalid customer.');
+            // Check existed movie and quantity in stock
+            results = await promisePool.query('SELECT * FROM ?? WHERE ?? = ?', [Movie.dbName, "movieId", req.body.movieId]);
+            if (results[0].length === 0) throw new Error('Invalid movie.');
+            if (results[0][0].numberInStock === 0) throw new Error('Movie is not in stock.');
+            // Begin transaction
+            connection.beginTransaction(function(err) {
+                if (err) throw new Error('Begin transaction fail.');
+                connection.query('UPDATE ?? SET numberInStock = ? WHERE movieId = ?', [Movie.dbName, results[0][0].numberInStock - 1, req.body.movieId],
+                    function(error, results, fields) {
+                        if (error) {
+                            return connection.rollback(function() {
+                                throw error;
+                            });
+                        }
+
+                        const rentalId = uuidv4().substr(1, Movie.idLength);
+                        connection.query('INSERT INTO ??(rentalId, customerId, movieId) VALUES(?, ?, ?)', [Rental.dbName, rentalId, req.body.customerId, req.body.movieId],
+                            function(error, results, fields) {
+                                if (error) {
+                                    return connection.rollback(function() {
+                                        throw error;
+                                    });
+                                }
+                                connection.commit(function(err) {
+                                    if (err) {
                                         return connection.rollback(function() {
-                                            throw error;
+                                            throw err;
                                         });
                                     }
-
-                                    const log = 'Post ' + results.insertId + ' added';
-                                    const rentalId = uuidv4().substr(1, Movie.idLength);
-
-                                    connection.query('INSERT INTO ??(rentalId, customerId, movieId) VALUES(?, ?, ?)', [Rental.dbName, rentalId, req.body.customerId, req.body.movieId],
-                                        function(error, results, fields) {
-                                            if (error) {
-                                                return connection.rollback(function() {
-                                                    throw error;
-                                                });
-                                            }
-                                            connection.commit(function(err) {
-                                                if (err) {
-                                                    return connection.rollback(function() {
-                                                        throw err;
-                                                    });
-                                                }
-                                                res.send('Add rental successful!');
-                                            });
-                                        });
+                                    res.send('Add rental successful!');
                                 });
-                        }
+                            });
                     });
-                }
-            }
+            });
+        } catch (err) {
+            if (err.message.includes('Invalid')) res.status(404).send(err.message);
+            else if (err.message.includes('stock')) res.status(400).send(err.message);
+            else res.status(500).send(err.message);
         }
         connection.release();
     });
-});
-
-router.put('/:id', async(req, res) => {
-    const error = Genre.validateGenre(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
-
-    connect(req, res, "UPDATE ?? SET genreName = ? WHERE genreId = ?", [Genre.dbName, req.body.genreName, req.params.id],
-        function(error, results, fields) {
-            if (error) res.status(500).send('Something went wrong.');
-            else {
-                if (results.affectedRows === 0) res.status(404).send('The genre with the given ID was not found.');
-                else res.send('Update genre successful.');
-            }
-        });
-});
-
-router.delete('/:id', async(req, res) => {
-    connect(req, res, "DELETE FROM ?? WHERE genreId = ?", [Genre.dbName, req.params.id],
-        function(error, results, fields) {
-            if (error) res.status(500).send('Something went wrong.');
-            else {
-                if (results.affectedRows === 0) res.status(404).send('The genre with the given ID was not found.');
-                else res.send('Delete genre successful.');
-            }
-        });
 });
 
 module.exports = router;
