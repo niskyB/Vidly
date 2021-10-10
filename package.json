@@ -19,8 +19,10 @@
   "homepage": "https://github.com/niskyB/Vidly#readme",
   "dependencies": {
     "bcrypt": "^5.0.1",
+    "config": "^3.3.6",
     "express": "^4.17.1",
     "joi": "^17.4.2",
+    "jsonwebtoken": "^8.5.1",
     "mysql": "^2.18.1",
     "mysql2": "^2.3.0",
     "nodemon": "^2.0.13",
