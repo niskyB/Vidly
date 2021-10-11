@@ -5,8 +5,9 @@ const { Rental } = require('../models/rental');
 const { Customer } = require('../models/customer');
 const { Movie } = require('../models/movie');
 const { v4: uuidv4 } = require('uuid');
+const auth = require('../middleware/auth');
 
-router.get('/', async(req, res) => {
+router.get('/', auth, async(req, res) => {
     connect(req, res, 'SELECT * FROM ??', [Rental.dbName],
         function(error, results, fields) {
             if (error) res.status(500).send('Something went wrong.');
@@ -17,7 +18,7 @@ router.get('/', async(req, res) => {
         });
 });
 
-router.get('/:id', async(req, res) => {
+router.get('/:id', auth, async(req, res) => {
     connect(req, res, 'SELECT * FROM ?? WHERE ?? = ?', [Rental.dbName, "rentalId", req.params.id],
         function(error, results, fields) {
             if (error) res.status(500).send('Something went wrong.');
@@ -28,7 +29,7 @@ router.get('/:id', async(req, res) => {
         });
 });
 
-router.post('/', async(req, res) => {
+router.post('/', auth, async(req, res) => {
     const error = Rental.validateRental(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 

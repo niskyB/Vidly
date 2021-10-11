@@ -4,8 +4,9 @@ const { connect, pool, promisePool } = require('../utils/dbConnector');
 const { User } = require('../models/user');
 const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcrypt');
+const auth = require('../middleware/auth');
 
-router.get('/me', async(req, res) => {
+router.get('/me', auth, async(req, res) => {
     if (req.user === undefined) return res.status(400).send('You are not login.');
     const results = await promisePool.query('SELECT * FROM ?? WHERE ?? = ?', [User.dbName, "userId", req.user.id]);
 
@@ -17,7 +18,7 @@ router.get('/me', async(req, res) => {
     res.send(user);
 });
 
-router.post('/', async(req, res) => {
+router.post('/', auth, async(req, res) => {
     const error = User.validateUser(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
