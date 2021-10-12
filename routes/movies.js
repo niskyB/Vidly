@@ -1,71 +1,55 @@
 const express = require('express');
 const router = express.Router();
-const { connect } = require('../utils/dbConnector');
+const { promisePool } = require('../utils/dbConnector');
 const { Movie } = require('../models/movie');
 const { v4: uuidv4 } = require('uuid');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
 
 router.get('/', auth, async(req, res) => {
-    connect(req, res, 'SELECT * FROM ??', [Movie.dbName],
-        function(error, results, fields) {
-            if (error) res.status(500).send('Something went wrong.');
-            else {
-                if (results[0] === undefined) res.status(404).send('The movie list is empty.');
-                else res.send(results);
-            }
-        });
+    // query data
+    const results = await promisePool.query('SELECT * FROM ??', [Movie.dbName]);
+    // check the results
+    if (results[0].length === 0) res.status(404).send('The movie list is empty.');
+    else res.send(results[0]);
 });
 
 router.get('/:id', auth, async(req, res) => {
-    connect(req, res, 'SELECT * FROM ?? WHERE ?? = ?', [Movie.dbName, "movieId", req.params.id],
-        function(error, results, fields) {
-            if (error) res.status(500).send('Something went wrong.');
-            else {
-                if (results[0] === undefined) res.status(404).send('The movie with the given ID was not found.');
-                else res.send(results[0]);
-            }
-        });
+    // query data
+    const results = await promisePool.query('SELECT * FROM ?? WHERE ?? = ?', [Movie.dbName, "movieId", req.params.id]);
+    // check the results
+    if (results[0].length === 0) res.status(404).send('The movie with the given ID was not found.');
+    else res.send(results[0][0]);
 });
 
 router.post('/', [auth, admin], async(req, res) => {
+    // check request body
     const error = Movie.validateMovie(req.body);
     if (error) return res.status(400).send(error.details[0].message);
-
+    // generate movieId
     const movieId = uuidv4().substr(1, Movie.idLength);
-    connect(req, res, "INSERT INTO ??(movieId, title, numberInStock, dailyRentalRate, genreId) VALUES(?, ?, ?, ?, ?)", [Movie.dbName, movieId, req.body.title, req.body.numberInStock, req.body.dailyRentalRate, req.body.genreId],
-        function(error, results, fields) {
-            if (error) res.status(404).send('Invalid genre.');
-            else {
-                if (results.affectedRows === 0) res.status(500).send('Something was wrong.');
-                else res.send('Add movie successful.');
-            }
-        });
+    // insert into database
+    await promisePool.query("INSERT INTO ??(movieId, title, numberInStock, dailyRentalRate, genreId) VALUES(?, ?, ?, ?, ?)", [Movie.dbName, movieId, req.body.title, req.body.numberInStock, req.body.dailyRentalRate, req.body.genreId]);
+    res.send('Add movie successful.');
 });
 
 router.put('/:id', [auth, admin], async(req, res) => {
+    // check request body
     const error = Movie.validateMovie(req.body);
     if (error) return res.status(400).send(error.details[0].message);
-
-    connect(req, res, "UPDATE ?? SET title = ?, numberInStock = ?, dailyRentalRate = ?, genreId = ? WHERE movieId = ?", [Movie.dbName, req.body.title, req.body.numberInStock, req.body.dailyRentalRate, req.body.genreId, req.params.id],
-        function(error, results, fields) {
-            if (error) res.status(404).send('Invalid genre.');
-            else {
-                if (results.affectedRows === 0) res.status(404).send('The movie with the given ID was not found.');
-                else res.send('Update movie successful.');
-            }
-        });
+    // update to database
+    const results = await promisePool.query("UPDATE ?? SET title = ?, numberInStock = ?, dailyRentalRate = ?, genreId = ? WHERE movieId = ?", [Movie.dbName, req.body.title, req.body.numberInStock, req.body.dailyRentalRate, req.body.genreId, req.params.id]);
+    // check the results
+    if (results[0].affectedRows === 0) res.status(404).send('The movie with the given ID was not found.');
+    else res.send('Update movie successful.');
 });
 
 router.delete('/:id', [auth, admin], async(req, res) => {
-    connect(req, res, "DELETE FROM ?? WHERE movieId = ?", [Movie.dbName, req.params.id],
-        function(error, results, fields) {
-            if (error) res.status(500).send('Something went wrong.');
-            else {
-                if (results.affectedRows === 0) res.status(404).send('The movie with the given ID was not found.');
-                else res.send('Delete movie successful.');
-            }
-        });
+    // delete from database
+    const results = await promisePool.query("DELETE FROM ?? WHERE movieId = ?", [Movie.dbName, req.params.id]);
+    // check the results
+    if (results[0].affectedRows === 0) res.status(404).send('The movie with the given ID was not found.');
+    else res.send('Delete movie successful.');
 });
 
 module.exports = router;
