@@ -10,7 +10,7 @@ router.get('/', auth, async(req, res) => {
     // query data
     const results = await promisePool.query('SELECT * FROM ??', [Genre.dbName]);
     // check the results
-    if (results[0] === 0) res.status(404).send('The genre list is empty.');
+    if (results[0].length === 0) res.status(404).send('The genre list is empty.');
     else res.send(results[0]);
 });
 
@@ -19,7 +19,7 @@ router.get('/:id', auth, async(req, res) => {
     const results = await promisePool.query('SELECT * FROM ?? WHERE ?? = ?', [Genre.dbName, "genreId", req.params.id]);
     // check the results
     if (results[0].length === 0) res.status(404).send('The genre with the given ID was not found.');
-    else res.send(results[0]);
+    else res.send(results[0][0]);
 });
 
 router.post('/', auth, async(req, res) => {
