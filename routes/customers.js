@@ -1,71 +1,55 @@
 const express = require('express');
 const router = express.Router();
-const { connect } = require('../utils/dbConnector');
+const { promisePool } = require('../utils/dbConnector');
 const { Customer } = require('../models/customer');
 const { v4: uuidv4 } = require('uuid');
 const auth = require('../middleware/auth')
 const admin = require('../middleware/admin');
 
 router.get('/', auth, async(req, res) => {
-    connect(req, res, 'SELECT * FROM ??', [Customer.dbName],
-        function(error, results, fields) {
-            if (error) res.status(500).send('Something went wrong.');
-            else {
-                if (results[0] === undefined) res.status(404).send('The customer list is empty.');
-                else res.send(results);
-            }
-        });
+    // query data
+    const results = await promisePool.query('SELECT * FROM ??', [Customer.dbName]);
+    // check the results
+    if (results[0].length === 0) res.status(404).send('The customer list is empty.');
+    else res.send(results[0]);
 });
 
 router.get('/:id', auth, async(req, res) => {
-    connect(req, res, 'SELECT * FROM ?? WHERE ?? = ?', [Customer.dbName, "customerId", req.params.id],
-        function(error, results, fields) {
-            if (error) res.status(500).send('Something went wrong.');
-            else {
-                if (results[0] === undefined) res.status(404).send('The customer with the given ID was not found.');
-                else res.send(results[0]);
-            }
-        });
+    // query data
+    const results = await promisePool.query('SELECT * FROM ?? WHERE ?? = ?', [Customer.dbName, "customerId", req.params.id]);
+    // check the results
+    if (results[0].length === 0) res.status(404).send('The customer with the given ID was not found.');
+    else res.send(results[0][0]);
 });
 
 router.post('/', auth, async(req, res) => {
+    // check request body
     const error = Customer.validateCustomer(req.body);
     if (error) return res.status(400).send(error.details[0].message);
-
+    // generate customerId
     const customerId = uuidv4().substr(1, Customer.idLength);
-    connect(req, res, "INSERT INTO ??(customerId, customerName, phone, isGold) VALUES(?, ?, ?, ?)", [Customer.dbName, customerId, req.body.customerName, req.body.phone, req.body.isGold],
-        function(error, results, fields) {
-            if (error) res.status(500).send('Something went wrong.');
-            else {
-                if (results.affectedRows === 0) res.status(500).send('Something was wrong.');
-                else res.send('Add customer successful.');
-            }
-        });
+    // insert into database
+    await promisePool.query("INSERT INTO ??(customerId, customerName, phone, isGold) VALUES(?, ?, ?, ?)", [Customer.dbName, customerId, req.body.customerName, req.body.phone, req.body.isGold]);
+    res.send('Add customer successful.');
 });
 
 router.put('/:id', auth, async(req, res) => {
+    // check request body
     const error = Customer.validateCustomer(req.body);
     if (error) return res.status(400).send(error.details[0].message);
-
-    connect(req, res, "UPDATE ?? SET customerName = ?, phone = ?, isGold = ? WHERE customerId = ?", [Customer.dbName, req.body.customerName, req.body.phone, req.body.isGold, req.params.id],
-        function(error, results, fields) {
-            if (error) res.status(500).send('Something went wrong.');
-            else {
-                if (results.affectedRows === 0) res.status(404).send('The customer with the given ID was not found.');
-                else res.send('Update customer successful.');
-            }
-        });
+    // update to database
+    const results = await promisePool.query("UPDATE ?? SET customerName = ?, phone = ?, isGold = ? WHERE customerId = ?", [Customer.dbName, req.body.customerName, req.body.phone, req.body.isGold, req.params.id]);
+    // check the results
+    if (results[0].affectedRows === 0) res.status(404).send('The customer with the given ID was not found.');
+    else res.send('Update customer successful.');
 });
 
 router.delete('/:id', [auth, admin], async(req, res) => {
-    connect(req, res, "DELETE FROM ?? WHERE customerId = ?", [Customer.dbName, req.params.id],
-        function(error, results, fields) {
-            if (error) res.status(500).send('Something went wrong.');
-            else {
-                if (results.affectedRows === 0) res.status(404).send('The customer with the given ID was not found.');
-                else res.send('Delete customer successful.');
-            }
-        });
+    // delete from database
+    const results = await promisePool.query("DELETE FROM ?? WHERE customerId = ?", [Customer.dbName, req.params.id]);
+    // check the results
+    if (results[0].affectedRows === 0) res.status(404).send('The customer with the given ID was not found.');
+    else res.send('Delete customer successful.');
 });
 
 module.exports = router;
