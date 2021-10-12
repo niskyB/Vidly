@@ -4,6 +4,7 @@ const { connect } = require('../utils/dbConnector');
 const { Movie } = require('../models/movie');
 const { v4: uuidv4 } = require('uuid');
 const auth = require('../middleware/auth');
+const admin = require('../middleware/admin');
 
 router.get('/', auth, async(req, res) => {
     connect(req, res, 'SELECT * FROM ??', [Movie.dbName],
@@ -27,7 +28,7 @@ router.get('/:id', auth, async(req, res) => {
         });
 });
 
-router.post('/', auth, async(req, res) => {
+router.post('/', [auth, admin], async(req, res) => {
     const error = Movie.validateMovie(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
@@ -42,7 +43,7 @@ router.post('/', auth, async(req, res) => {
         });
 });
 
-router.put('/:id', auth, async(req, res) => {
+router.put('/:id', [auth, admin], async(req, res) => {
     const error = Movie.validateMovie(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
@@ -56,7 +57,7 @@ router.put('/:id', auth, async(req, res) => {
         });
 });
 
-router.delete('/:id', auth, async(req, res) => {
+router.delete('/:id', [auth, admin], async(req, res) => {
     connect(req, res, "DELETE FROM ?? WHERE movieId = ?", [Movie.dbName, req.params.id],
         function(error, results, fields) {
             if (error) res.status(500).send('Something went wrong.');

@@ -3,7 +3,8 @@ const router = express.Router();
 const { connect } = require('../utils/dbConnector');
 const { Customer } = require('../models/customer');
 const { v4: uuidv4 } = require('uuid');
-const auth = require('../middleware/auth');
+const auth = require('../middleware/auth')
+const admin = require('../middleware/admin');
 
 router.get('/', auth, async(req, res) => {
     connect(req, res, 'SELECT * FROM ??', [Customer.dbName],
@@ -56,7 +57,7 @@ router.put('/:id', auth, async(req, res) => {
         });
 });
 
-router.delete('/:id', auth, async(req, res) => {
+router.delete('/:id', [auth, admin], async(req, res) => {
     connect(req, res, "DELETE FROM ?? WHERE customerId = ?", [Customer.dbName, req.params.id],
         function(error, results, fields) {
             if (error) res.status(500).send('Something went wrong.');
