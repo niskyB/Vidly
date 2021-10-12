@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { connect, pool, promisePool } = require('../utils/dbConnector');
+const { pool, promisePool } = require('../connection/dbConnector');
 const { Rental } = require('../models/rental');
 const { Customer } = require('../models/customer');
 const { Movie } = require('../models/movie');

@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const { User } = require('../models/user');
 const express = require('express');
 const router = express.Router();
-const { promisePool } = require('../utils/dbConnector');
+const { promisePool } = require('../connection/dbConnector');
 
 // POST verify email and password then generate auth token if email and password are valid.
 router.post('/', async(req, res) => {
