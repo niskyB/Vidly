@@ -7,26 +7,32 @@ const { Movie } = require('../models/movie');
 const { v4: uuidv4 } = require('uuid');
 const auth = require('../middleware/auth');
 
+// GET get rental list
 router.get('/', auth, async(req, res) => {
     // query data
     const results = await promisePool.query('SELECT * FROM ??', [Rental.dbName]);
+
     // check the results
     if (results[0].length === 0) res.status(404).send('The rental list is empty.');
     else res.send(results[0]);
 });
 
+// GET rental by given id
 router.get('/:id', auth, async(req, res) => {
     // query data
     const results = await promisePool.query('SELECT * FROM ?? WHERE ?? = ?', [Rental.dbName, "rentalId", req.params.id]);
+
     // check the results
     if (results[0].length === 0) res.status(404).send('The rental with the given ID was not found.');
     else res.send(results[0][0]);
 });
 
+// POST creat a new rental and save to database
 router.post('/', auth, async(req, res) => {
     // check request body
     const error = Rental.validateRental(req.body);
     if (error) return res.status(400).send(error.details[0].message);
+
     // connect to database
     pool.getConnection(async function(err, connection) {
         try {
@@ -34,10 +40,12 @@ router.post('/', auth, async(req, res) => {
             // Check existed customer
             let results = await promisePool.query(`SELECT * FROM ?? WHERE ?? = ?`, [Customer.dbName, "customerId", req.body.customerId]);
             if (results[0].length === 0) throw new Error('Invalid customer.');
+
             // Check existed movie and quantity in stock
             results = await promisePool.query('SELECT * FROM ?? WHERE ?? = ?', [Movie.dbName, "movieId", req.body.movieId]);
             if (results[0].length === 0) throw new Error('Invalid movie.');
             if (results[0][0].numberInStock === 0) throw new Error('Movie is not in stock.');
+
             // Begin transaction
             connection.beginTransaction(function(err) {
                 if (err) throw new Error('Begin transaction fail.');
