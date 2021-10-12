@@ -8,31 +8,26 @@ const { v4: uuidv4 } = require('uuid');
 const auth = require('../middleware/auth');
 
 router.get('/', auth, async(req, res) => {
-    connect(req, res, 'SELECT * FROM ??', [Rental.dbName],
-        function(error, results, fields) {
-            if (error) res.status(500).send('Something went wrong.');
-            else {
-                if (results[0] === undefined) res.status(404).send('The rental list is empty.');
-                else res.send(results);
-            }
-        });
+    // query data
+    const results = await promisePool.query('SELECT * FROM ??', [Rental.dbName]);
+    // check the results
+    if (results[0].length === 0) res.status(404).send('The rental list is empty.');
+    else res.send(results[0]);
 });
 
 router.get('/:id', auth, async(req, res) => {
-    connect(req, res, 'SELECT * FROM ?? WHERE ?? = ?', [Rental.dbName, "rentalId", req.params.id],
-        function(error, results, fields) {
-            if (error) res.status(500).send('Something went wrong.');
-            else {
-                if (results[0] === undefined) res.status(404).send('The rental with the given ID was not found.');
-                else res.send(results[0]);
-            }
-        });
+    // query data
+    const results = await promisePool.query('SELECT * FROM ?? WHERE ?? = ?', [Rental.dbName, "rentalId", req.params.id]);
+    // check the results
+    if (results[0].length === 0) res.status(404).send('The rental with the given ID was not found.');
+    else res.send(results[0][0]);
 });
 
 router.post('/', auth, async(req, res) => {
+    // check request body
     const error = Rental.validateRental(req.body);
     if (error) return res.status(400).send(error.details[0].message);
-
+    // connect to database
     pool.getConnection(async function(err, connection) {
         try {
             if (err) throw new Error('Cannot connect to database.');
@@ -53,7 +48,7 @@ router.post('/', auth, async(req, res) => {
                                 throw error;
                             });
                         }
-
+                        // generate rentalId
                         const rentalId = uuidv4().substr(1, Movie.idLength);
                         connection.query('INSERT INTO ??(rentalId, customerId, movieId) VALUES(?, ?, ?)', [Rental.dbName, rentalId, req.body.customerId, req.body.movieId],
                             function(error, results, fields) {
