@@ -5,25 +5,26 @@ const { Genre } = require('../models/genre');
 const { v4: uuidv4 } = require('uuid');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
+const { getGenreList, getGenreById, createGenre, updateGenre, deleteGenre } = require('../connection/genreConnector');
 
 // GET get genre list
 router.get('/', auth, async(req, res) => {
     // query data
-    const results = await promisePool.query('SELECT * FROM ??', [Genre.dbName]);
+    const genres = await getGenreList(Genre);
 
     // check the results
-    if (results[0].length === 0) res.status(404).send('The genre list is empty.');
-    else res.send(results[0]);
+    if (genres.length === 0) res.status(404).send('The genre list is empty.');
+    else res.send(genres);
 });
 
 // GET get genre by given id
 router.get('/:id', auth, async(req, res) => {
     // query data
-    const results = await promisePool.query('SELECT * FROM ?? WHERE ?? = ?', [Genre.dbName, "genreId", req.params.id]);
+    const genre = await getGenreById(Genre, req);
 
-    // check the results
-    if (results[0].length === 0) res.status(404).send('The genre with the given ID was not found.');
-    else res.send(results[0][0]);
+    // check the result
+    if (genre === undefined) res.status(404).send('The genre with the given ID was not found.');
+    else res.send(genre);
 });
 
 // POST create a new genre and save to database
@@ -36,7 +37,7 @@ router.post('/', auth, async(req, res) => {
     const genreId = uuidv4().substr(1, Genre.idLength);
 
     // insert into database
-    await promisePool.query("INSERT INTO ??(genreId, genreName) VALUES(?, ?)", [Genre.dbName, genreId, req.body.genreName]);
+    await createGenre(Genre, req, genreId);
     res.send('Add genre successful.');
 });
 
@@ -46,21 +47,15 @@ router.put('/:id', [auth, admin], async(req, res) => {
     const error = Genre.validateGenre(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
-    // update to database
-    const results = await promisePool.query("UPDATE ?? SET genreName = ? WHERE genreId = ?", [Genre.dbName, req.body.genreName, req.params.id]);
-
-    // check the results
-    if (results[0].affectedRows === 0) res.status(404).send('The genre with the given ID was not found.');
+    // update to database and check the result 
+    if (!await updateGenre(Genre, req)) res.status(404).send('The genre with the given ID was not found.');
     else res.send('Update genre successful.');
 });
 
 // DELETE remove genre from database
 router.delete('/:id', [auth, admin], async(req, res) => {
-    // delete from database
-    const results = await promisePool.query("DELETE FROM ?? WHERE genreId = ?", [Genre.dbName, req.params.id]);
-
-    // check the results
-    if (results[0].affectedRows === 0) res.status(404).send('The genre with the given ID was not found.');
+    // delete from database and check the result
+    if (!await deleteGenre(Genre, req)) res.status(404).send('The genre with the given ID was not found.');
     else res.send('Delete genre successful.');
 });
 
