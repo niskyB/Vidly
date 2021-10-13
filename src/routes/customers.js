@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const { promisePool } = require('../connection/dbConnector');
 const { Customer } = require('../models/customer');
 const { v4: uuidv4 } = require('uuid');
 const auth = require('../middleware/auth')
