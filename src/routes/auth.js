@@ -12,7 +12,7 @@ router.post('/', async(req, res) => {
 
     // find email in database
     const results = await require('../connection/authConnector')(User, req);
-    if (results.length === 0) return res.status(400).send('Ivalid email or password.');
+    if (results === undefined) return res.status(400).send('Ivalid email or password.');
 
     // check password
     const user = new User(results.userId, results.username, req.body.email, results.password, results.isAdmin);
