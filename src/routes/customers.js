@@ -12,8 +12,8 @@ router.get('/', auth, async(req, res) => {
     const results = await getCustomerList(Customer);
 
     // check the results
-    if (results[0].length === 0) res.status(404).send('The customer list is empty.');
-    else res.send(results[0]);
+    if (results.length === 0) res.status(404).send('The customer list is empty.');
+    else res.send(results);
 });
 
 // GET get customer by given id

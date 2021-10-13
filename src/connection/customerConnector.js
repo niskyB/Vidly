@@ -2,14 +2,12 @@ const { promisePool } = require('../connection/dbConnector');
 
 async function getCustomerList(Customer) {
     const results = await promisePool.query('SELECT * FROM ??', [Customer.dbName]);
-    const customers = results;
-    return customers;
+    return results[0];
 }
 
 async function getCustomerById(Customer, req) {
     const results = await promisePool.query('SELECT * FROM ?? WHERE ?? = ?', [Customer.dbName, "customerId", req.params.id]);
-    const customer = results[0];
-    return customer[0];
+    return results[0][0];
 }
 
 async function createCustomer(Customer, req, customerId) {
