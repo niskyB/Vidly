@@ -2,28 +2,31 @@ const express = require('express');
 const router = express.Router();
 const { promisePool } = require('../connection/dbConnector');
 const { Movie } = require('../models/movie');
+const { Genre } = require('../models/genre');
 const { v4: uuidv4 } = require('uuid');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
+const { getMovieList, getMovieById, createMovie, updateMovie, deleteMovie } = require('../connection/movieConnector');
+const { getGenreById } = require('../connection/genreConnector');
 
 // GET get movie list
 router.get('/', auth, async(req, res) => {
     // query data
-    const results = await promisePool.query('SELECT * FROM ??', [Movie.dbName]);
+    const results = await getMovieList(Movie);
 
     // check the results
-    if (results[0].length === 0) res.status(404).send('The movie list is empty.');
-    else res.send(results[0]);
+    if (results.length === 0) res.status(404).send('The movie list is empty.');
+    else res.send(results);
 });
 
 // GET get movie by given id
 router.get('/:id', auth, async(req, res) => {
     // query data
-    const results = await promisePool.query('SELECT * FROM ?? WHERE ?? = ?', [Movie.dbName, "movieId", req.params.id]);
+    const result = await getMovieById(Movie, req.params.id);
 
     // check the results
-    if (results[0].length === 0) res.status(404).send('The movie with the given ID was not found.');
-    else res.send(results[0][0]);
+    if (result === undefined) res.status(404).send('The movie with the given ID was not found.');
+    else res.send(result);
 });
 
 // POST create a new movie and save to database
@@ -32,11 +35,15 @@ router.post('/', [auth, admin], async(req, res) => {
     const error = Movie.validateMovie(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
+    // check genre
+    const genre = await getGenreById(Genre, req.body.genreId);
+    if (genre === undefined) return res.status(400).send('Invalid genre');
+
     // generate movieId
     const movieId = uuidv4().substr(1, Movie.idLength);
 
     // insert into database
-    await promisePool.query("INSERT INTO ??(movieId, title, numberInStock, dailyRentalRate, genreId) VALUES(?, ?, ?, ?, ?)", [Movie.dbName, movieId, req.body.title, req.body.numberInStock, req.body.dailyRentalRate, req.body.genreId]);
+    await createMovie(Movie, req, movieId);
     res.send('Add movie successful.');
 });
 
@@ -46,21 +53,19 @@ router.put('/:id', [auth, admin], async(req, res) => {
     const error = Movie.validateMovie(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
-    // update to database
-    const results = await promisePool.query("UPDATE ?? SET title = ?, numberInStock = ?, dailyRentalRate = ?, genreId = ? WHERE movieId = ?", [Movie.dbName, req.body.title, req.body.numberInStock, req.body.dailyRentalRate, req.body.genreId, req.params.id]);
+    // check genre
+    const genre = await getGenreById(Genre, req.body.genreId);
+    if (genre === undefined) return res.status(400).send('Invalid genre');
 
-    // check the results
-    if (results[0].affectedRows === 0) res.status(404).send('The movie with the given ID was not found.');
+    // update to database and check the results
+    if (!await updateMovie(Movie, req)) res.status(404).send('The movie with the given ID was not found.');
     else res.send('Update movie successful.');
 });
 
 // DELETE remove movie from database
 router.delete('/:id', [auth, admin], async(req, res) => {
-    // delete from database
-    const results = await promisePool.query("DELETE FROM ?? WHERE movieId = ?", [Movie.dbName, req.params.id]);
-
-    // check the results
-    if (results[0].affectedRows === 0) res.status(404).send('The movie with the given ID was not found.');
+    // delete from database and check the results 
+    if (!await deleteMovie(Movie, req)) res.status(404).send('The movie with the given ID was not found.');
     else res.send('Delete movie successful.');
 });
 
