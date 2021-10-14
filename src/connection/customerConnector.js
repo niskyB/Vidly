@@ -5,8 +5,8 @@ async function getCustomerList(Customer) {
     return results[0];
 }
 
-async function getCustomerById(Customer, req) {
-    const results = await promisePool.query('SELECT * FROM ?? WHERE ?? = ?', [Customer.dbName, "customerId", req.params.id]);
+async function getCustomerById(Customer, id) {
+    const results = await promisePool.query('SELECT * FROM ?? WHERE ?? = ?', [Customer.dbName, "customerId", id]);
     return results[0][0];
 }
 

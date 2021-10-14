@@ -19,7 +19,7 @@ router.get('/', auth, async(req, res) => {
 // GET get customer by given id
 router.get('/:id', auth, async(req, res) => {
     // query data
-    const customer = await getCustomerById(Customer, req);
+    const customer = await getCustomerById(Customer, req.params.id);
 
     // check the results
     if (customer === undefined) res.status(404).send('The customer with the given ID was not found.');
