@@ -5,8 +5,8 @@ async function getGenreList(Genre) {
     return results[0];
 }
 
-async function getGenreById(Genre, req) {
-    const results = await promisePool.query('SELECT * FROM ?? WHERE ?? = ?', [Genre.dbName, "genreId", req.params.id]);
+async function getGenreById(Genre, genreId) {
+    const results = await promisePool.query('SELECT * FROM ?? WHERE ?? = ?', [Genre.dbName, "genreId", genreId]);
     return results[0][0];
 }
 
