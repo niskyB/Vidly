@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const { User } = require('../models/user');
 const express = require('express');
 const router = express.Router();
+const { getResponseForm } = require('../utils/helper');
 
 // POST verify email and password then generate auth token if email and password are valid.
 router.post('/', async(req, res) => {
@@ -12,18 +13,18 @@ router.post('/', async(req, res) => {
 
     // find email in database
     const results = await require('../connection/authConnector')(User, req);
-    if (results === undefined) return res.status(400).send('Ivalid email or password.');
+    if (results === undefined) return res.status(400).send(getResponseForm(null, null, 'Ivalid email or password.'));
 
     // check password
     const user = new User(results.userId, results.username, req.body.email, results.password, results.isAdmin);
     const validPassword = await bcrypt.compare(req.body.password, user.password);
-    if (!validPassword) return res.status(400).send('Ivalid email or password.');
+    if (!validPassword) return res.status(400).send(getResponseForm(null, null, 'Ivalid email or password.'));
 
     // generate auth token
     const token = user.generateAuthToken();
 
     // respone token 
-    res.send(token);
+    res.send(getResponseForm(token, null, "login successfully."));
 });
 
 function validate(user) {
