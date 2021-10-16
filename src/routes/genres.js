@@ -12,7 +12,7 @@ router.get('/', auth, async(req, res) => {
     const genres = await getGenreList(Genre);
 
     // check the results
-    if (genres.length === 0) res.status(404).send('The genre list is empty.');
+    if (genres.length === 0) res.status(404).send(getResponseForm(null, null, 'The genre list is empty.'));
     else res.send(genres);
 });
 
@@ -22,40 +22,40 @@ router.get('/:id', auth, async(req, res) => {
     const genre = await getGenreById(Genre, req.params.id);
 
     // check the result
-    if (genre === undefined) res.status(404).send('The genre with the given ID was not found.');
-    else res.send(genre);
+    if (genre === undefined) res.status(404).send(getResponseForm(null, null, 'The genre with the given ID was not found.'));
+    else res.send(getResponseForm(genre, null, 'Get genre with the given ID successful.'));
 });
 
 // POST create a new genre and save to database
 router.post('/', auth, async(req, res) => {
     // check request body
     const error = Genre.validateGenre(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
+    if (error) return res.status(400).send(getResponseForm(null, error, "Invalid params"));
 
     // generate genreId
     const genreId = uuidv4().substr(1, Genre.idLength);
 
     // insert into database
     await createGenre(Genre, req, genreId);
-    res.send('Add genre successful.');
+    res.send(getResponseForm(null, null, 'Add genre successful.'));
 });
 
 // PUT update genre's information
 router.put('/:id', [auth, admin], async(req, res) => {
     // check request body
     const error = Genre.validateGenre(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
+    if (error) return res.status(400).send(getResponseForm(null, error, "Invalid params"));
 
     // update to database and check the result 
-    if (!await updateGenre(Genre, req)) res.status(404).send('The genre with the given ID was not found.');
-    else res.send('Update genre successful.');
+    if (!await updateGenre(Genre, req)) res.status(404).send(getResponseForm(null, null, 'The genre with the given ID was not found.'));
+    else res.send(getResponseForm(null, null, 'Update genre successful.'));
 });
 
 // DELETE remove genre from database
 router.delete('/:id', [auth, admin], async(req, res) => {
     // delete from database and check the result
-    if (!await deleteGenre(Genre, req)) res.status(404).send('The genre with the given ID was not found.');
-    else res.send('Delete genre successful.');
+    if (!await deleteGenre(Genre, req)) res.status(404).send(getResponseForm(null, null, 'The genre with the given ID was not found.'));
+    else res.send(getResponseForm(null, null, 'Delete genre successful.'));
 });
 
 module.exports = router;
