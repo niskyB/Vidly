@@ -31,7 +31,7 @@ router.get('/:id', auth, async(req, res) => {
 router.post('/', auth, async(req, res) => {
     // check request body
     const error = Customer.validateCustomer(req.body);
-    if (error) return res.status(400).send(getResponseForm(null, error, error.details[0].message));
+    if (error) return res.status(400).send(getResponseForm(null, error, "Invalid params"));
 
     // generate customerId
     const customerId = uuidv4().substr(1, Customer.idLength);
@@ -45,7 +45,7 @@ router.post('/', auth, async(req, res) => {
 router.put('/:id', auth, async(req, res) => {
     // check request body
     const error = Customer.validateCustomer(req.body);
-    if (error) return res.status(400).send(getResponseForm(null, error, error.details[0].message));
+    if (error) return res.status(400).send(getResponseForm(null, error, "Invalid params"));
 
     // update to database and check the results
     if (!await updateCustomer(Customer, req)) res.status(404).send(getResponseForm(null, null, 'The customer with the given ID was not found.'));
