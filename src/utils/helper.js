@@ -1,9 +1,9 @@
 function getResponseForm(data, error, message) {
-    const errorObject = error.details[0];
+    const errorObject = error ? error.details[0] : null;
 
     return {
         data: data,
-        [errorObject.context.label]: errorObject.message.replace("\"" + errorObject.context.label + "\" ", "").replace("must", "should"),
+        [errorObject ? errorObject.context.label : "error"]: errorObject ? errorObject.message.replace("\"" + errorObject.context.label + "\" ", "").replace("must", "should") : null,
         message: message
     };
 }
