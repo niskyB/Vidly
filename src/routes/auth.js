@@ -9,7 +9,7 @@ const { getResponseForm } = require('../utils/helper');
 router.post('/', async(req, res) => {
     // check request body
     const error = validate(req.body);
-    if (error) return res.status(400).send(error.details[0].message);
+    if (error) return res.status(400).send(getResponseForm(null, error, "Invalid params"));
 
     // find email in database
     const results = await require('../connection/authConnector')(User, req);
