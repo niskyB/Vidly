@@ -5,6 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
 const { getGenreList, getGenreById, createGenre, updateGenre, deleteGenre } = require('../connection/genreConnector');
+const { getResponseForm } = require('../utils/helper');
 
 // GET get genre list
 router.get('/', auth, async(req, res) => {
