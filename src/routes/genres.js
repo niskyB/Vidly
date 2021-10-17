@@ -7,16 +7,6 @@ const admin = require('../middleware/admin');
 const { getGenreList, getGenreById, createGenre, updateGenre, deleteGenre } = require('../connection/genreConnector');
 const { getResponseForm } = require('../utils/helper');
 
-// GET get genre list
-router.get('/', auth, async(req, res) => {
-    // query data
-    const genres = await getGenreList(Genre);
-
-    // check the results
-    if (genres.length === 0) res.status(404).send(getResponseForm(null, null, 'The genre list is empty.'));
-    else res.send(genres);
-});
-
 // GET get genre by given id
 router.get('/:id', auth, async(req, res) => {
     // query data
@@ -25,6 +15,16 @@ router.get('/:id', auth, async(req, res) => {
     // check the result
     if (genre === undefined) res.status(404).send(getResponseForm(null, null, 'The genre with the given ID was not found.'));
     else res.send(getResponseForm(genre, null, 'Get genre with the given ID successful.'));
+});
+
+// GET get genre list
+router.get('/', auth, async(req, res) => {
+    // query data
+    const genres = await getGenreList(Genre);
+
+    // check the results
+    if (genres.length === 0) res.status(404).send(getResponseForm(null, null, 'The genre list is empty.'));
+    else res.send(genres);
 });
 
 // POST create a new genre and save to database

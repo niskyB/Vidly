@@ -10,16 +10,6 @@ const { getMovieList, getMovieById, createMovie, updateMovie, deleteMovie } = re
 const { getGenreById } = require('../connection/genreConnector');
 const { getResponseForm } = require('../utils/helper');
 
-// GET get movie list
-router.get('/', auth, async(req, res) => {
-    // query data
-    const results = await getMovieList(Movie);
-
-    // check the results
-    if (results.length === 0) res.status(404).send(getResponseForm(null, null, 'The movie list is empty.'));
-    else res.send(getResponseForm(results, null, 'Get movie list successful.'));
-});
-
 // GET get movie by given id
 router.get('/:id', auth, async(req, res) => {
     // query data
@@ -28,6 +18,16 @@ router.get('/:id', auth, async(req, res) => {
     // check the results
     if (result === undefined) res.status(404).send(getResponseForm(null, null, 'The movie with the given ID was not found.'));
     else res.send(getResponseForm(result, null, 'Get movie with the given ID successful.'));
+});
+
+// GET get movie list
+router.get('/', auth, async(req, res) => {
+    // query data
+    const results = await getMovieList(Movie);
+
+    // check the results
+    if (results.length === 0) res.status(404).send(getResponseForm(null, null, 'The movie list is empty.'));
+    else res.send(getResponseForm(results, null, 'Get movie list successful.'));
 });
 
 // POST create a new movie and save to database

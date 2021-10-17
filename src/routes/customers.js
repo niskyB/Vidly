@@ -7,16 +7,6 @@ const admin = require('../middleware/admin');
 const { getCustomerList, getCustomerById, createCustomer, updateCustomer, deleteCustomer } = require('../connection/customerConnector');
 const { getResponseForm } = require('../utils/helper');
 
-// GET get customer list
-router.get('/', auth, async(req, res) => {
-    // query data
-    const results = await getCustomerList(Customer);
-
-    // check the results
-    if (results.length === 0) res.status(404).send(getResponseForm(null, null, 'The customer list is empty.'));
-    else res.send(getResponseForm(results, null, 'Get customer list successful.'));
-});
-
 // GET get customer by given id
 router.get('/:id', auth, async(req, res) => {
     // query data
@@ -25,6 +15,16 @@ router.get('/:id', auth, async(req, res) => {
     // check the results
     if (customer === undefined) res.status(404).send(getResponseForm(null, null, 'The customer with the given ID was not found.'));
     else res.send(getResponseForm(customer, null, 'Get customer with the given ID successful.'));
+});
+
+// GET get customer list
+router.get('/', auth, async(req, res) => {
+    // query data
+    const results = await getCustomerList(Customer);
+
+    // check the results
+    if (results.length === 0) res.status(404).send(getResponseForm(null, null, 'The customer list is empty.'));
+    else res.send(getResponseForm(results, null, 'Get customer list successful.'));
 });
 
 // POST create a new customer and save to database
