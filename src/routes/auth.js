@@ -24,7 +24,10 @@ router.post('/', async(req, res) => {
     const token = user.generateAuthToken();
 
     // respone token 
-    res.send(getResponseForm(token, null, "login successfully."));
+    res.cookie("x-auth-token", token, {
+        maxAge: 86400 * 100,
+    });
+    res.send(getResponseForm(null, null, "login successfully."));
 });
 
 function validate(user) {
