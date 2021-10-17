@@ -6,6 +6,7 @@ const { Movie } = require('../models/movie');
 const auth = require('../middleware/auth');
 const { getRentalList, getRentalById, createRental } = require('../connection/rentalConnector');
 const { getResponseForm } = require('../utils/helper');
+const status = require('../constants/status');
 
 // GET rental by given id
 router.get('/:id', auth, async(req, res) => {
@@ -13,7 +14,7 @@ router.get('/:id', auth, async(req, res) => {
     const results = await getRentalById(Rental, req);
 
     // check the results
-    if (results === undefined) res.status(404).send(getResponseForm(null, null, 'The rental with the given ID was not found.'));
+    if (results === undefined) res.status(status.NOT_FOUND).send(getResponseForm(null, null, 'The rental with the given ID was not found.'));
     else res.send(getResponseForm(results, null, 'Get rental with the given ID successful.'));
 });
 
@@ -23,7 +24,7 @@ router.get('/', auth, async(req, res) => {
     const results = await getRentalList(Rental);
 
     // check the results
-    if (results.length === 0) res.status(404).send(getResponseForm(null, null, 'The rental list is empty.'));
+    if (results.length === 0) res.status(status.NOT_FOUND).send(getResponseForm(null, null, 'The rental list is empty.'));
     else res.send(getResponseForm(results, null, 'Get rental list successful.'));
 });
 
@@ -31,7 +32,7 @@ router.get('/', auth, async(req, res) => {
 router.post('/', auth, async(req, res) => {
     // check request body
     const error = Rental.validateRental(req.body);
-    if (error) return res.status(400).send(getResponseForm(null, error, "Invalid params"));
+    if (error) return res.status(status.BAD_REQUEST).send(getResponseForm(null, error, "Invalid params"));
 
     // connect to database
     await createRental(Rental, req, Customer, Movie, res);

@@ -6,11 +6,12 @@ const bcrypt = require('bcrypt');
 const auth = require('../middleware/auth');
 const { getUserById, getUserByEmail, createUser } = require('../connection/userConnector');
 const { getResponseForm } = require('../utils/helper');
+const status = require('../constants/status');
 
 // GET get the current user's information 
 router.get('/me', auth, async(req, res) => {
     // check user is login or not
-    if (req.user === undefined) return res.status(400).send(getResponseForm(null, null, 'You are not login.'));
+    if (req.user === undefined) return res.status(status.BAD_REQUEST).send(getResponseForm(null, null, 'You are not login.'));
 
     // find user in database
     const results = await getUserById(User, req.user.id);
@@ -28,11 +29,11 @@ router.get('/me', auth, async(req, res) => {
 router.post('/', async(req, res) => {
     // check request body 
     const error = User.validateUser(req.body);
-    if (error) return res.status(400).send(getResponseForm(null, error, "Invalid params"));
+    if (error) return res.status(status.BAD_REQUEST).send(getResponseForm(null, error, "Invalid params"));
 
     // check existed email
     const results = await getUserByEmail(User, req);
-    if (results.length != 0) return res.status(400).send(getResponseForm(null, null, 'Email already registered.'));
+    if (results.length != 0) return res.status(status.BAD_REQUEST).send(getResponseForm(null, null, 'Email already registered.'));
 
     // encrypt password
     let password = req.body.password;

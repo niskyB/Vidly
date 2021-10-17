@@ -4,21 +4,22 @@ const { User } = require('../models/user');
 const express = require('express');
 const router = express.Router();
 const { getResponseForm } = require('../utils/helper');
+const status = require('../constants/status');
 
 // POST verify email and password then generate auth token if email and password are valid.
 router.post('/', async(req, res) => {
     // check request body
     const error = validate(req.body);
-    if (error) return res.status(400).send(getResponseForm(null, error, "Invalid params"));
+    if (error) return res.status(status.BAD_REQUEST).send(getResponseForm(null, error, "Invalid params"));
 
     // find email in database
     const results = await require('../connection/authConnector')(User, req);
-    if (results === undefined) return res.status(400).send(getResponseForm(null, null, 'Ivalid email or password.'));
+    if (results === undefined) return res.status(status.BAD_REQUEST).send(getResponseForm(null, null, 'Ivalid email or password.'));
 
     // check password
     const user = new User(results.userId, results.username, req.body.email, results.password, results.isAdmin);
     const validPassword = await bcrypt.compare(req.body.password, user.password);
-    if (!validPassword) return res.status(400).send(getResponseForm(null, null, 'Ivalid email or password.'));
+    if (!validPassword) return res.status(status.BAD_REQUEST).send(getResponseForm(null, null, 'Ivalid email or password.'));
 
     // generate auth token
     const token = user.generateAuthToken();

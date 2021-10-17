@@ -6,6 +6,7 @@ const auth = require('../middleware/auth')
 const admin = require('../middleware/admin');
 const { getCustomerList, getCustomerById, createCustomer, updateCustomer, deleteCustomer } = require('../connection/customerConnector');
 const { getResponseForm } = require('../utils/helper');
+const status = require('../constants/status');
 
 // GET get customer by given id
 router.get('/:id', auth, async(req, res) => {
@@ -13,7 +14,7 @@ router.get('/:id', auth, async(req, res) => {
     const customer = await getCustomerById(Customer, req.params.id);
 
     // check the results
-    if (customer === undefined) res.status(404).send(getResponseForm(null, null, 'The customer with the given ID was not found.'));
+    if (customer === undefined) res.status(status.NOT_FOUND).send(getResponseForm(null, null, 'The customer with the given ID was not found.'));
     else res.send(getResponseForm(customer, null, 'Get customer with the given ID successful.'));
 });
 
@@ -23,7 +24,7 @@ router.get('/', auth, async(req, res) => {
     const results = await getCustomerList(Customer);
 
     // check the results
-    if (results.length === 0) res.status(404).send(getResponseForm(null, null, 'The customer list is empty.'));
+    if (results.length === 0) res.status(status.NOT_FOUND).send(getResponseForm(null, null, 'The customer list is empty.'));
     else res.send(getResponseForm(results, null, 'Get customer list successful.'));
 });
 
@@ -31,7 +32,7 @@ router.get('/', auth, async(req, res) => {
 router.post('/', auth, async(req, res) => {
     // check request body
     const error = Customer.validateCustomer(req.body);
-    if (error) return res.status(400).send(getResponseForm(null, error, "Invalid params"));
+    if (error) return res.status(status.BAD_REQUEST).send(getResponseForm(null, error, "Invalid params"));
 
     // generate customerId
     const customerId = uuidv4().substr(1, Customer.idLength);
@@ -45,17 +46,17 @@ router.post('/', auth, async(req, res) => {
 router.put('/:id', auth, async(req, res) => {
     // check request body
     const error = Customer.validateCustomer(req.body);
-    if (error) return res.status(400).send(getResponseForm(null, error, "Invalid params"));
+    if (error) return res.status(status.BAD_REQUEST).send(getResponseForm(null, error, "Invalid params"));
 
     // update to database and check the results
-    if (!await updateCustomer(Customer, req)) res.status(404).send(getResponseForm(null, null, 'The customer with the given ID was not found.'));
+    if (!await updateCustomer(Customer, req)) res.status(status.NOT_FOUND).send(getResponseForm(null, null, 'The customer with the given ID was not found.'));
     else res.send(getResponseForm(null, null, 'Update customer successful.'));;
 });
 
 // DELETE remove customer from database
 router.delete('/:id', [auth, admin], async(req, res) => {
     // delete from database and check the results 
-    if (!await deleteCustomer(Customer, req)) res.status(404).send(getResponseForm(null, null, 'The customer with the given ID was not found.'));
+    if (!await deleteCustomer(Customer, req)) res.status(status.NOT_FOUND).send(getResponseForm(null, null, 'The customer with the given ID was not found.'));
     else res.send(getResponseForm(null, null, 'Delete customer successful.'));
 });
 
