@@ -7,6 +7,8 @@ const auth = require('../middleware/auth');
 const { getUserById, getUserByEmail, createUser } = require('../connection/userConnector');
 const { getResponseForm } = require('../utils/helper');
 const status = require('../constants/status');
+const multerErrorMiddleware = require('../middleware/multerMiddleware');
+const upload = require('../utils/multerHelper');
 
 // GET get the current user's information 
 router.get('/me', auth, async(req, res) => {
@@ -26,7 +28,7 @@ router.get('/me', auth, async(req, res) => {
 });
 
 // POST create a new user and save to database
-router.post('/', async(req, res) => {
+router.post('/', multerErrorMiddleware(upload.single('avatar')), async(req, res) => {
     // check request body 
     const error = User.validateUser(req.body);
     if (error) return res.status(status.BAD_REQUEST).send(getResponseForm(null, error, "Invalid params"));
@@ -34,6 +36,11 @@ router.post('/', async(req, res) => {
     // check existed email
     const results = await getUserByEmail(User, req);
     if (results.length != 0) return res.status(status.BAD_REQUEST).send(getResponseForm(null, null, 'Email already registered.'));
+
+    // check avatar
+    if (req.file) {
+        req.body.avatar = req.file.filename;
+    }
 
     // encrypt password
     let password = req.body.password;
@@ -45,7 +52,7 @@ router.post('/', async(req, res) => {
     const user = new User(userId, req.body.username, req.body.email, req.body.password, req.body.isAdmin);
 
     // save to database
-    await createUser(User, req, userId, password);
+    await createUser(User, req, userId, password, req.body.avatar);
 
     // generate token
     const token = user.generateAuthToken();

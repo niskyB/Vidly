@@ -1,7 +1,7 @@
 const status = require('../constants/status');
 const multer = require('multer');
 
-exports = function multerErrorMiddleware(multerAction) {
+module.exports = function multerErrorMiddleware(multerAction) {
     return (req, res, next) => {
         multerAction(req, res, err => {
             if (err instanceof multer.MulterError) {

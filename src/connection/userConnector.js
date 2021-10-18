@@ -10,8 +10,8 @@ async function getUserByEmail(User, req) {
     return results[0];
 }
 
-async function createUser(User, req, userId, password) {
-    await promisePool.query('INSERT INTO ??(userId, username, email, password, isAdmin) VALUES(?, ?, ?, ?, ?)', [User.dbName, userId, req.body.username, req.body.email, password, req.body.isAdmin]);
+async function createUser(User, req, userId, password, avatar) {
+    await promisePool.query('INSERT INTO ??(userId, username, email, password, isAdmin, avatar) VALUES(?, ?, ?, ?, ?, ?)', [User.dbName, userId, req.body.username, req.body.email, password, req.body.isAdmin, avatar]);
 }
 exports.getUserById = getUserById;
 exports.getUserByEmail = getUserByEmail;

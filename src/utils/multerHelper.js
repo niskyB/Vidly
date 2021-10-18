@@ -1,10 +1,12 @@
 const multer = require('multer');
+const path = require("path");
 
-const maxSize = 1 * 1080 * 1080;
+
+const maxSize = 1 * 1024 * 1024;
 
 const storage = multer.diskStorage({
     destination: function(req, file, cb) {
-        cb(null, './uploads');
+        cb(null, path.resolve('uploads'));
     },
     filename: function(req, file, cb) {
         const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
@@ -13,7 +15,8 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-    if (file.mimtype === "image/jpg" || file.mimtype === "image/jpeg" || file.mimtype === "image/png") {
+
+    if (file.mimetype === "image/jpg" || file.mimetype === "image/jpeg" || file.mimetype === "image/png") {
         cb(null, true);
     } else {
         cb(new Error("Image uploaded should be jpg/jpeg or png"), false);
@@ -26,4 +29,4 @@ const upload = multer({
     limits: { fileSize: maxSize }
 });
 
-exports.upload = upload;
+module.exports = upload;
