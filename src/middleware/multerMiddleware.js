@@ -7,7 +7,7 @@ module.exports = function multerErrorMiddleware(multerAction) {
             if (err instanceof multer.MulterError) {
                 return res.status(status.BAD_REQUEST).send(err.message);
             } else if (err) {
-                return res.status(status.BAD_REQUEST).send(err);
+                return res.status(status.INTERNAL_SERVER_ERROR).send(err);
             }
             next();
         });
